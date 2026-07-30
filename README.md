@@ -1,7 +1,7 @@
 # 🐤 Flappy Bird · 自主进化，点击即玩：
 [https://github.com/YongJing-Bie/DQN_application](https://yongjing-bie.github.io/DQN_application/)
 
-一个**纯前端、零依赖**的 Flappy Bird 深度强化学习项目。浏览器打开 `index.html` 即可训练，无需 Python / 服务器 / 构建工具。
+一个纯前端的 Flappy Bird 深度强化学习项目。无需 Python / 服务器 / 构建工具。
 
 ![tech stack](https://img.shields.io/badge/Frontend-Vanilla%20JS-blue?logo=javascript)
 ![algo](https://img.shields.io/badge/Algorithm-Double%20DQN-purple)
