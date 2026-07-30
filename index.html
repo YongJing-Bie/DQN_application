@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flappy Bird · 自主进化</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="bird-logo">🐤</div>
+      <div class="brand-text">
+        <h1>Flappy Bird · 自主进化 <span class="tag">持续学习</span></h1>
+        <p>深度强化学习 · Double DQN · 间隙引导 · 前瞻规划（10维）</p>
+      </div>
+    </div>
+    <div class="status">
+      <span class="dot" id="statusBadge"></span>
+      <span id="statusText">已就绪</span>
+    </div>
+  </header>
+
+  <!-- 3x3 主网格：A列(游戏/曲线) B列(控制台/超参/奖励) C列(模型/状态/日志) -->
+  <div class="dashboard">
+    <!-- A1:A2 — 游戏（跨2行） -->
+    <section class="card game-card">
+      <div class="game-wrap">
+        <canvas id="gameCanvas" width="420" height="600"></canvas>
+        <div class="score-overlay">
+          <div>分数: <span id="curScore">0</span></div>
+          <div>最高: <span id="highScore">0</span></div>
+        </div>
+      </div>
+      <div class="speed-row">
+        <label for="speed">训练速度</label>
+        <input type="range" id="speed" min="1" max="20" value="4">
+        <span id="speedVal">4x</span>
+        <label for="testSpeed" style="margin-left:4px;">演示</label>
+        <input type="range" id="testSpeed" min="1" max="6" value="2">
+        <span id="testSpeedVal">2x</span>
+        <span class="hint">空格键手动拍翅</span>
+      </div>
+    </section>
+
+    <!-- B1 — 控制台 -->
+    <div class="card">
+      <h2 class="card-title">控制台</h2>
+      <div class="btn-row">
+        <button id="btnStart" class="btn btn-blue">▶ 训练</button>
+        <button id="btnTest" class="btn btn-teal">👁 演示</button>
+        <button id="btnPause" class="btn btn-orange">⏸ 暂停</button>
+        <button id="btnReset" class="btn btn-red">⟳ 重置</button>
+      </div>
+      <div class="btn-row" style="margin-top:5px;">
+        <button id="btnManual" class="btn btn-purple">✋ 人工采集</button>
+        <label class="switch-row"><input type="checkbox" id="chkRender" checked> 渲染</label>
+        <label class="switch-row"><input type="checkbox" id="chkDebug"> 调试</label>
+      </div>
+    </div>
+
+    <!-- C1 — 模型管理 -->
+    <div class="card">
+      <h2 class="card-title">模型管理</h2>
+      <div class="btn-row">
+        <button id="btnSave" class="btn btn-green">💾 保存</button>
+        <button id="btnLoad" class="btn btn-blue">📂 载入</button>
+      </div>
+      <div class="btn-row" style="margin-top:5px;">
+        <button id="btnExport" class="btn btn-purple">📤 备份</button>
+        <label class="btn btn-gray">📥 导入<input type="file" id="fileInput" accept=".json" hidden></label>
+      </div>
+    </div>
+
+    <!-- B2 — 超参数 + 状态向量（合并一卡） -->
+    <div class="card">
+      <h2 class="card-title">超参数</h2>
+      <div class="param-grid">
+        <label>学习率 α<input type="number" id="inLr" step="0.0001" min="0" value="0.0005"></label>
+        <label>折扣 γ<input type="number" id="inGamma" step="0.01" min="0" max="1" value="0.95"></label>
+        <label>探索率 ε<input type="number" id="inEps" step="0.01" min="0" max="1" value="0.01"></label>
+        <label>批量大小<input type="number" id="inBatch" step="1" min="1" value="64"></label>
+      </div>
+      <button id="btnApply" class="btn btn-blue block">应用超参数</button>
+
+      <h2 class="card-title" style="margin-top:10px;">状态向量 (10维)</h2>
+      <div class="state-vector compact">
+        <div class="sv-row"><span class="sv-label">s0 鸟Y</span><span class="sv-val" id="sv0">—</span><span class="sv-raw" id="sv0raw">—</span></div>
+        <div class="sv-row"><span class="sv-label">s1 速度</span><span class="sv-val" id="sv1">—</span><span class="sv-raw" id="sv1raw">—</span></div>
+        <div class="sv-row"><span class="sv-label">s2 管道距</span><span class="sv-val" id="sv2">—</span><span class="sv-raw" id="sv2raw">—</span></div>
+        <div class="sv-row"><span class="sv-label">s3 下1上</span><span class="sv-val" id="sv3">—</span><span class="sv-raw" id="sv3raw">—</span></div>
+        <div class="sv-row"><span class="sv-label">s4 下1下</span><span class="sv-val" id="sv4">—</span><span class="sv-raw" id="sv4raw">—</span></div>
+        <div class="sv-row"><span class="sv-label">s5 下1中</span><span class="sv-val" id="sv5">—</span><span class="sv-raw" id="sv5raw">—</span></div>
+        <div class="sv-row"><span class="sv-label">s6 下1相</span><span class="sv-val" id="sv6">—</span><span class="sv-raw" id="sv6raw">—</span></div>
+        <div class="sv-row sv-new"><span class="sv-label">s7 下2上</span><span class="sv-val" id="sv7">—</span><span class="sv-raw" id="sv7raw">—</span></div>
+        <div class="sv-row sv-new"><span class="sv-label">s8 下2下</span><span class="sv-val" id="sv8">—</span><span class="sv-raw" id="sv8raw">—</span></div>
+        <div class="sv-row sv-new"><span class="sv-label">s9 下2中</span><span class="sv-val" id="sv9">—</span><span class="sv-raw" id="sv9raw">—</span></div>
+      </div>
+    </div>
+
+    <!-- C2 — 运行状态（去掉「当前分」：已挪到 A3 下图） -->
+    <div class="card">
+      <h2 class="card-title">运行状态</h2>
+      <div class="stat-grid">
+        <div class="stat"><span class="lbl">模式</span><span class="val" id="statusText2">—</span></div>
+        <div class="stat"><span class="lbl">最高分</span><span class="val" id="highScore2">0</span></div>
+        <div class="stat"><span class="lbl">局数</span><span class="val" id="episodes">0</span></div>
+        <div class="stat"><span class="lbl">探索率 ε</span><span class="val" id="epsilon">0.010</span></div>
+        <div class="stat"><span class="lbl">近100平均</span><span class="val" id="avgScore">0.0</span></div>
+        <div class="stat"><span class="lbl">损失 Loss</span><span class="val" id="loss">0.0000</span></div>
+        <div class="stat"><span class="lbl">经验池</span><span class="val" id="bufSize">0</span></div>
+        <div class="stat"><span class="lbl">人工采集</span><span class="val" id="manualCount">0</span></div>
+        <div class="stat"><span class="lbl">帧率 FPS</span><span class="val" id="fpsVal">0</span></div>
+      </div>
+    </div>
+
+    <!-- A3 — 近100局平局分曲线（上图） + 当前局分条（下图） -->
+    <div class="card chart-card">
+      <h2 class="card-title">近100局平局分曲线</h2>
+      <div class="chart-split">
+        <div class="chart-top">
+          <canvas id="lineCanvas"></canvas>
+        </div>
+        <div class="chart-bottom">
+          <div class="cur-episode-bar">
+            <div class="left">
+              <span class="lbl">本局未结束</span>
+              <span class="ep-no">第 <b id="curEpNo">0</b> 局</span>
+              <span class="alive" id="curEpAlive">存活中</span>
+            </div>
+            <div class="right" style="display:flex;align-items:baseline;gap:10px;">
+              <span class="score" id="curEpScore">0</span>
+              <span class="highest">本局最高 <b id="curEpHigh">0</b></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B3 — 奖励函数 -->
+    <div class="card">
+      <h2 class="card-title">奖励塑形 · 间隙引导</h2>
+      <div class="param-grid">
+        <label>存活/帧<input type="number" id="inSurviveReward" step="0.001" value="0.001"></label>
+        <label>死亡惩罚<input type="number" id="inDeathPenalty" step="0.1" value="-1"></label>
+        <label>间隙系数<input type="number" id="inGapRewardCoeff" step="0.0000001" value="0.000001"></label>
+        <label>下方罚/帧<input type="number" id="inGapPenaltyBelow" step="0.01" value="-0.05"></label>
+        <label>上方罚/帧<input type="number" id="inGapPenaltyAbove" step="0.01" value="-0.05"></label>
+      </div>
+      <button id="btnApplyReward" class="btn btn-blue block">应用奖励参数</button>
+      <div class="stat-grid" style="margin-top:7px;">
+        <div class="stat"><span class="lbl">存活</span><span class="val" id="rewardSurvive">0.00</span></div>
+        <div class="stat"><span class="lbl">间隙奖励</span><span class="val" id="rewardGapReward">0.00</span></div>
+        <div class="stat"><span class="lbl">下方罚</span><span class="val" id="rewardGapPenalty">0.00</span></div>
+        <div class="stat"><span class="lbl">上方罚</span><span class="val" id="rewardGapPenaltyAbove">0.00</span></div>
+        <div class="stat"><span class="lbl">死亡罚</span><span class="val" id="rewardDeath">0.00</span></div>
+        <div class="stat"><span class="lbl">总奖励</span><span class="val" id="rewardTotal">0.00</span></div>
+      </div>
+    </div>
+
+    <!-- C3 — 运行日志（纵向填满） -->
+    <div class="card log-card">
+      <h2 class="card-title">运行日志</h2>
+      <div id="logBox" class="log-box"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="js/nn.js"></script>
+<script src="js/game.js"></script>
+<script src="js/agent.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

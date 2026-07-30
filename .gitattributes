@@ -1,0 +1,26 @@
+# ===== 统一换行符（Windows 提交自动转 LF，避免不同平台换行冲突）=====
+* text=auto eol=lf
+
+# ===== 明确标注二进制 =====
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
+*.mp4  binary
+*.mp3  binary
+*.woff binary
+*.woff2 binary
+*.ttf  binary
+*.otf  binary
+
+# ===== 代码文件走 LF =====
+*.js   text eol=lf
+*.ts   text eol=lf
+*.html text eol=lf
+*.css  text eol=lf
+*.md   text eol=lf
+*.json text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
