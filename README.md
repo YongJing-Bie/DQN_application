@@ -1,3 +1,4 @@
+https://github.com/YongJing-Bie/DQN_application
 # 🐤 Flappy Bird · 自主进化
 
 一个**纯前端、零依赖**的 Flappy Bird 深度强化学习项目。浏览器打开 `index.html` 即可训练，无需 Python / 服务器 / 构建工具。
