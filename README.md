@@ -28,7 +28,7 @@
 
 ### 方式一：直接打开（最简单）
 
-https://github.com/YongJing-Bie/DQN_application](https://yongjing-bie.github.io/DQN_application/
+https://yongjing-bie.github.io/DQN_application/
 
 ### 方式二：clone后打开index.html
 
