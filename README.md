@@ -26,7 +26,7 @@
 
 > 推荐 Chrome / Edge / Firefox 最新版。
 
-### 方式一：直接打开（最简单）
+### 方式一：直接打开
 
 https://yongjing-bie.github.io/DQN_application/
 
@@ -136,8 +136,3 @@ A：可以，`agent.serialize()` 导出的 JSON 里有权重、超参、状态�
 **Q：训练多久能跑 100 分？**
 A：默认参数 + 渲染关闭 + 20x 速度，通常 300 局能稳定过 50 分，偶尔能到几百。经验池越满、人工采集越对，收敛越快。
 
----
-
-## 📜 License
-
-MIT，随便用，随便改。如果你在此基础上做了更酷的版本（比如 PPO / Rainbow / 像素输入），欢迎来个 Star : )
